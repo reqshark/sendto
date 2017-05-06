@@ -1,6 +1,7 @@
 
 /*
   Copyright (c) 2017 Bent Cardan
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"),
   to deal in the Software without restriction, including without limitation
@@ -28,39 +29,53 @@
 #include "ref.h"
 
 using v8::FunctionTemplate;
+using v8::Number;
 using v8::String;
 
 using Nan::HandleScope;
 using Nan::Set;
 using Nan::New;
 
-int fd;
-struct sockaddr_un addr;
+static int fd, optval;
+static struct sockaddr_un addr;
 
-NAN_METHOD(sendto){
-  String::Utf8Value path(info[0]);
-  char *socket_path = *path;
+NAN_METHOD(getopt){
+  socklen_t optlen = sizeof(optval);
 
-  // open unix datagram socket for node.js
+  /* open unix datagram socket for node.js */
   if ( (fd = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
     perror("socket error");
 
-  // reset system output buffer size to accomodate size of node buffer
-  // at least now on osx we can send buffers larger than 2048 bytes...
+  /* store send buffer limit in `int optval`  */
+  if (getsockopt(fd, SOL_SOCKET, SO_SNDBUF, &optval, &optlen) == -1)
+    perror("getsockopt SO_SNDBUF");
+}
+
+
+NAN_METHOD(sendto){
+  String::Utf8Value path(info[0]);
+  char *sockname = *path;
+
+  /* compare buffer to system's send buffer limit. increase accordingly */
   int opt = node::Buffer::Length(info[1]);
-  if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &opt, sizeof (opt)) < 0)
-    perror("SO_SNDBUF setsockopt() fail");
+  if (opt > optval) {
+    if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &opt, sizeof (opt)) < 0)
+      perror("SO_SNDBUF setsockopt()");
+
+    /* store new limit */
+    optval = opt;
+  }
 
   memset(&addr, 0, sizeof(addr));
   addr.sun_family = AF_UNIX;
-  strcpy(addr.sun_path, socket_path);
+  strcpy(addr.sun_path, sockname);
 
   if (sendto(fd, node::Buffer::Data(info[1]), opt, 0, (struct sockaddr *)&addr,
     sizeof(struct sockaddr_un)) < 0 ) {
     perror("sending outputBuf datagram message");
   }
 
-  return;
+  info.GetReturnValue().Set(New<Number>(opt));
 }
 
 #define EXPORT_METHOD(C, S)                                                    \
@@ -69,7 +84,10 @@ NAN_METHOD(sendto){
 
 NAN_MODULE_INIT(Init) {
   HandleScope scope;
+
   EXPORT_METHOD(target, sendto);
+  EXPORT_METHOD(target, getopt);
+
 }
 
 NODE_MODULE(sendto, Init)

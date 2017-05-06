@@ -1,6 +1,7 @@
 
 /*
   Copyright (c) 2017 Bent Cardan
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"),
   to deal in the Software without restriction, including without limitation
@@ -20,4 +21,8 @@
   IN THE SOFTWARE.
 */
 
-module.exports = require('./build/Release/sendto.node').sendto
+const s = require('./build/Release/sendto.node')
+
+module.exports = s.sendto
+
+s.getopt()

@@ -1,11 +1,12 @@
 {
   "name":             "sendto",
   "version":          "0.0.1",
-  "description":      "unix datagram sendto with accommodating output buffer size",
+  "description":      "unix datagram sendto with accommodating buffer size",
   "dependencies":     {
     "nan":              "2.6.2"
   },
   "devDependencies":  {
+    "recvfrom":         "1.0.1",
     "tape":             "3.5",
     "tap-spec":         "2.2"
   },
@@ -19,6 +20,7 @@
   "homepage":         "http://req.link",
   "keywords":         [
     "datagram",
+    "recvfrom",
     "sendto",
     "unix",
     "native",
