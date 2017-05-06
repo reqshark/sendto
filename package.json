@@ -1,0 +1,34 @@
+{
+  "name":             "sendto",
+  "version":          "0.0.1",
+  "description":      "unix datagram sendto with accommodating output buffer size",
+  "dependencies":     {
+    "nan":              "2.6.2"
+  },
+  "devDependencies":  {
+    "tape":             "3.5",
+    "tap-spec":         "2.2"
+  },
+  "repository":       {
+    "type":             "git",
+    "url":              "git://github.com/reqshark/sendto"
+  },
+  "scripts":          {
+    "test":             "node test | tap-spec"
+  },
+  "homepage":         "http://req.link",
+  "keywords":         [
+    "datagram",
+    "sendto",
+    "unix",
+    "native",
+    "binding",
+    "addon"
+  ],
+  "author":           {
+    "name":             "Bent Cardan",
+    "email":            "bent@nothingsatisfies.com",
+    "url":              "http://req.link"
+  },
+  "license": "MIT"
+}
