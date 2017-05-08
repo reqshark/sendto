@@ -37,15 +37,16 @@ function out (t) {
 
   const msg = 'Hello, world!'
 
-  let str = '', i = 1000
+  var str = '', i = 1000
   while (i--)
     str += msg
 
-  recvfrom(addr, str.length * 2, buf => {
-    t.ok( isBuffer(buf),   'str has a length of 13000, larger than most sys limits' )
-    t.is( String(buf),  str, `buffer recv'd from sendto is large: ${buf}`  )
+  recvfrom(addr, str.length * 2, recv)
+  function recv (buf) {
+    t.ok( isBuffer(buf),   'str length of 13000, larger than most sys limits' )
+    t.is( String(buf),  str, 'recv buf from sendto is large: ' + buf )
     setImmediate(process.exit, 0)
-  })
+  }
 
   sendto(addr, Buffer(str))
 }

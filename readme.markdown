@@ -1,4 +1,5 @@
 # sendto
+[![Build Status](https://travis-ci.org/reqshark/sendto.svg?branch=master)](https://travis-ci.org/reqshark/sendto)
 
 unix datagrams on osx have system send buffer limits of `2048` bytes.
 
