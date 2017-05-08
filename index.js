@@ -25,4 +25,4 @@ const s = require('./build/Release/sendto.node')
 
 module.exports = s.sendto
 
-s.getopt()
+s.up()

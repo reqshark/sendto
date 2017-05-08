@@ -36,19 +36,17 @@ using Nan::HandleScope;
 using Nan::Set;
 using Nan::New;
 
-static int fd, optval;
+static int fd, sz;
 static struct sockaddr_un addr;
 
-NAN_METHOD(getopt){
-  socklen_t optlen = sizeof(optval);
+NAN_METHOD(up){
 
   /* open unix datagram socket for node.js */
   if ( (fd = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
     perror("socket error");
 
-  /* store send buffer limit in `int optval`  */
-  if (getsockopt(fd, SOL_SOCKET, SO_SNDBUF, &optval, &optlen) == -1)
-    perror("getsockopt SO_SNDBUF");
+  /* start send buffer limit at zero  */
+  sz = 0;
 }
 
 
@@ -56,14 +54,14 @@ NAN_METHOD(sendto){
   String::Utf8Value path(info[0]);
   char *sockname = *path;
 
-  /* compare buffer to system's send buffer limit. increase accordingly */
+  /* compare buffer to send buf limit. increase accordingly */
   int opt = node::Buffer::Length(info[1]);
-  if (opt > optval) {
+  if (opt > sz) {
     if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &opt, sizeof (opt)) < 0)
       perror("SO_SNDBUF setsockopt()");
 
     /* store new limit */
-    optval = opt;
+    sz = opt;
   }
 
   memset(&addr, 0, sizeof(addr));
@@ -86,7 +84,7 @@ NAN_MODULE_INIT(Init) {
   HandleScope scope;
 
   EXPORT_METHOD(target, sendto);
-  EXPORT_METHOD(target, getopt);
+  EXPORT_METHOD(target, up);
 
 }
 
