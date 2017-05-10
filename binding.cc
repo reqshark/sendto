@@ -68,10 +68,22 @@ NAN_METHOD(sendto){
   addr.sun_family = AF_UNIX;
   strcpy(addr.sun_path, sockname);
 
-  if (sendto(fd, node::Buffer::Data(info[1]), opt, 0, (struct sockaddr *)&addr,
-    sizeof(struct sockaddr_un)) < 0 ) {
-    perror("sending outputBuf datagram message");
-  }
+  int tx = 0;
+  do {
+
+    tx = sendto(
+      fd,
+      node::Buffer::Data(info[1]),
+      opt,
+      0,
+      (struct sockaddr *)&addr,
+      sizeof(struct sockaddr_un)
+    );
+
+    if (tx)
+      perror("retrying sendto(), recv() is acting slow to read");
+
+  } while( tx < 0 );
 
   info.GetReturnValue().Set(New<Number>(opt));
 }
