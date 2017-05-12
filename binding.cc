@@ -81,8 +81,9 @@ NAN_METHOD(sendto){
     );
 
     if (tx == -1) {
-      perror("retrying sendto(). recv() is slow to read");
-      usleep(backoff * rtry++);
+      if (rtry++ > 100)
+        perror("retrying sendto(). recv() is slow to read");
+      usleep(backoff * rtry);
     }
 
 
