@@ -23,6 +23,7 @@
 
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <unistd.h>
 #include <errno.h>
 
 #include "nan.h"
@@ -68,9 +69,8 @@ NAN_METHOD(sendto){
   addr.sun_family = AF_UNIX;
   strcpy(addr.sun_path, sockname);
 
-  int tx = 0;
+  int tx, rtry = 1, backoff = 250; // start backoff wait at quarter millisecond
   do {
-
     tx = sendto(
       fd,
       node::Buffer::Data(info[1]),
@@ -80,8 +80,11 @@ NAN_METHOD(sendto){
       sizeof(struct sockaddr_un)
     );
 
-    if (tx)
-      perror("retrying sendto(), recv() is acting slow to read");
+    if (tx == -1) {
+      perror("retrying sendto(). recv() is slow to read");
+      usleep(backoff * rtry++);
+    }
+
 
   } while( tx < 0 );
 
